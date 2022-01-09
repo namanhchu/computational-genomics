@@ -1,0 +1,230 @@
+---
+title: "Computer Assignment 1"
+author: '781552'
+date: "9/24/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(reshape2)
+library(ggplot2)
+library(ape)
+library(Biostrings)
+```
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+# Question 1
+## Subtask (a)
+```{r}
+
+seq <- read.GenBank("NC_001643", as.character = TRUE)[[1]]
+seqStr <- paste(seq, sep ="", collapse = "")
+DNAStr <- DNAString(seqStr)
+
+```
+## Subtask (b)
+
+```{r}
+freq <- alphabetFrequency(DNAStr)[DNA_BASES]
+freq
+
+```
+
+
+```{r}
+comp <- complement(DNAStr)
+
+freqComp <- alphabetFrequency(comp)[DNA_BASES]
+freqComp
+```
+## Subtask (c)
+
+```{r}
+t <- seq(1, length(DNAStr), 500)
+t
+len <- length(t)
+
+t[[len+1]] <-  16554
+
+t1 <- t[2:35]
+last <- seq(length(DNAStr) - 500, length(DNAStr)) 
+
+densityA <- list()
+densityT <- list()
+densityC <- list()
+densityG <- list()
+densityAT <- list()
+densityCG <- list()
+
+name <- c("1:500", "501:100", "1001:1500", "1501:2000")
+
+for (i in 1:(length(t)-1)) {
+  x <- t[i]
+  y <- t[i+1]
+  freqA <- alphabetFrequency(DNAStr[x:y])['A']
+  freqT <- alphabetFrequency(DNAStr[x:y])['T']
+  freqC <- alphabetFrequency(DNAStr[x:y])['C']
+  freqG <- alphabetFrequency(DNAStr[x:y])['G']
+  
+  densityA <- c(densityA, (freqA / (y - x)) )
+  densityT <- c(densityT, (freqT / (y - x)) )
+  densityC <- c(densityC, (freqC / (y - x)) )
+  densityG <- c(densityG, (freqG / (y - x)) )
+  
+  freqAT <- dinucleotideFrequency(DNAStr[x:y])["AT"]
+  freqCG <- dinucleotideFrequency(DNAStr[x:y])["CG"]
+  
+  densityAT <- c(densityAT, (freqAT / (y - x)) )
+  densityCG <- c(densityCG, (freqCG / (y - x)) )
+}
+plot(t1, densityA, type = "l", col = 'blue', lty = 1, xlab ='Nucleotides', ylab = 'Density')
+
+lines(t1, densityT,  type = "l", col = 'red', lty = 1 )
+
+lines(t1, densityC, type = "l", col = 'green', lty = 1 )
+
+legend( x = "topright", legend=c('Density A', 'Density T', 'Density C'), col=c('blue', 'red', 'green'), lty=1:1)
+
+
+plot(t1, densityG, type = "l", col = 'black', lty = 4, xlab ='Nucleotides', ylab = 'Density G' )
+
+
+
+```
+``` {r}
+plot(t1, densityAT, type = "l", col = 'black', lty = 1, xlab ='Nucleotides', ylab = 'Density' )
+
+lines(t1, densityCG,  type = "l", col = 'red', lty = 1 )
+
+legend( x = "topright", legend=c('Density AT', 'Density CG'), col=c('black', 'red'), lty=1:1)
+```
+
+## Subtask (d)
+```{r}
+dimers <-  dinucleotideFrequency(DNAStr, as.prob = TRUE, as.matrix = TRUE)
+dimers
+```
+## Subtask (e)
+```{r}
+fourmers <- oligonucleotideFrequency(DNAStr, width = 4)
+
+sort(fourmers, decreasing = TRUE)[1:10]
+```
+#Question 2 
+## Subtask (a)
+
+```{r}
+seq2 <- read.GenBank("L43967", as.character = TRUE)[[1]]
+seqStr2 <- paste(seq, sep ="", collapse = "")
+DNAStr2 <- DNAString(seqStr2)
+```
+
+## Subtask (b)
+```{r}
+dimers2 <-  dinucleotideFrequency(DNAStr2, as.prob = TRUE, as.matrix = TRUE)
+dimers2
+```
+## Subtask (c)
+```{r}
+a <- dimers2[1,]
+c <- dimers2[2,]
+g <- dimers2[3,]
+t <- dimers2[4,]
+
+
+pi <- c(sum(a), sum(c), sum(g), sum(t) )
+pi
+
+```
+```{r}
+sum(pi)
+```
+## Subtask (d)
+```{r}
+dimers2[1,] <-  dimers2[1,] / sum(a)
+dimers2[2,] <-  dimers2[2,] / sum(c)
+dimers2[3,] <-  dimers2[3,] / sum(g)
+dimers2[4,] <-  dimers2[4,] / sum(t)
+dimers2
+
+sum(dimers2[1,])
+```
+## Subtask (e)
+```{r}
+markovChainSim <- function(x, n, pi, P){
+  seq <- vector(mode = "list", length = n)
+  a <- sample(x, size = 1, replace = TRUE, prob = pi )
+  seq[i]
+  
+  
+for (i in 1:length(seq)) {
+  b <- seq[i]
+  
+  
+  if (b == "A"){
+    c <- sample(x, size = 1, replace = TRUE, prob = P[1,])
+  } else if(b == "C") {
+     c <- sample(x, size = 1, replace = TRUE, prob = P[2,])
+  } else if(b == "G") {
+    c <- sample(x, size = 1, replace = TRUE, prob = P[3,])
+  } else {
+    c <- sample(x, size = 1, replace = TRUE, prob = P[4,] )
+  }
+  seq[i] <- c
+}
+  
+  return(seq)
+  
+}
+
+```
+## Subtask(f)
+
+```{r}
+testSim <-  markovChainSim(x = c("A", "C", "G", "T" ), n = 50000, pi = pi, P = dimers2)
+testSimseq <- paste(testSim, sep ="", collapse = "")
+testSimDNAString <- DNAString(testSimseq)
+
+dimersTest <-  dinucleotideFrequency(testSimDNAString, as.prob = TRUE, as.matrix = TRUE)
+dimersTest
+
+
+```
+
+```{r}
+dimers
+```
+
+```{r}
+pi
+```
+
+```{r}
+a <- dimersTest[1,]
+c <- dimersTest[2,]
+g <- dimersTest[3,]
+t <- dimersTest[4,]
+
+piTest <- c(sum(a), sum(c), sum(g), sum(t)) 
+piTest
+```
+#The simulated frequencies vary only a little bit from the original frequencies, so the function's performance is quite decent.

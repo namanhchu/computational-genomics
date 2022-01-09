@@ -1,0 +1,134 @@
+---
+title: "Computer Assignment 4"
+author: '781552'
+date: "10/15/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ape)
+library(Biostrings)
+library(DECIPHER)
+library(HMM)
+library(phangorn)
+
+```
+#Question 1
+## Subtask (a)
+
+``` {r}
+
+X <- c("C","A","G","C","C","C","T","A","G","T","T","G","C","C","C","C", "C","A","G","A","G","G","C","A","G","G","T","A","A","A","T","A", "G","C","C","A")
+
+states = c("GC", "AT")
+
+T = cbind(c(0.80, 0.75), c(0.20, 0.25))
+rownames(T) <- c("GC", "AT")
+colnames(T) <- c("GC", "AT")
+
+E = cbind(c(0.10, 0.40, 0.40, 0.10), c(0.40, 0.10, 0.10, 0.40))
+rownames(E) <- c("A", "C", "G", "T")
+colnames(E) <- c("GC", "AT")
+
+hmm <- initHMM(States = states, Symbols = X, transProbs = T, emissionProbs = E)
+bw = baumWelch(hmm, X)
+
+bw
+bw$hmm$transProbs
+bw$hmm$emissionProbs
+```
+
+##Subtask (b)
+
+``` {r}
+
+newhmm <- initHMM(States = states, Symbols = X, transProbs = bw$hmm$transProbs , emissionProbs = bw$hmm$emissionProbs)
+
+viterbi(newhmm, X)
+
+```
+##Subtask (c)
+
+```{r}
+
+fw = forward(newhmm, X)
+bw = backward(newhmm, X)
+
+fw
+bw
+```
+##Subtask d
+
+```{r}
+
+probSeq = fw[1, 36] + fw[2, 36]
+
+probSeq
+```
+##Subtask e
+
+```{r}
+
+posterior(newhmm, X)
+
+
+
+```
+##Subtask f
+
+```{r}
+
+### The results from the posterior allow us to see the path the sequence will take
+
+```
+
+
+#Question 2
+##Subtask a
+
+``` {r}
+
+load("D:/Downloads/iceMan_Phylo.RData")
+x <- as.DNAbin(iceMan_phyDat)
+
+dist_a <- dist.dna(x)
+
+tree_a <- NJ(dist_a)
+
+plot(tree_a, cex = 0.5)
+
+
+```
+
+##Subtask b
+
+```{r}
+
+dist_b <- dist.dna(x, model = "JC69")
+
+tree_b <- NJ(dist_b)
+
+plot(tree_b, cex = 0.5)
+
+
+```
+##Subtask c
+
+```{r}
+
+dist_c <- dist.dna(x, model = "K80")
+
+tree_c <- NJ(dist_c)
+
+plot(tree_c, cex = 0.5)
+
+
+
+```
+
+```{r}
+
+
+### The most related modern human population to the Iceman is the Italian UK
+```
